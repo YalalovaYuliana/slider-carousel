@@ -2,24 +2,22 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    width: 100%;
 }
 
 .container {
     overflow: hidden;
-}
-
-.card-carousel {
     z-index: 1;
     position: relative;
     margin: 0 auto;
     transition: filter .3s ease;
 }
 
-.container.smooth-return .card {
+.container.smooth-return .slide {
     transition: transform 0.8s ease, left 0.8s ease, opacity 0.8s ease;
 }
 
-.card-carousel .card {
+.slide {
     position: absolute;
     object-fit: cover;
     margin: 0;

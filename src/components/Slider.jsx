@@ -9,11 +9,13 @@ import img5 from '/src/assets/img5.jpg';
 const imageArray = [img1, img2, img3, img4, img5];
 
 function Slider() {
-    const sizeSlides = { width: '250', height: '250' } // размер слайда
+    const sizeSlides = { width: 250, height: 250 } // размер слайда в пикселях
     const spacebetweenSlides = 150  // расстояние между центрами слайдов
 
+    const sizeContainer = sizeSlides.width * 2 // ширина слайдера
+
     const containerRef = useRef();
-    const cardRefs = useRef([]);
+    const slideRefs = useRef([]);
     const xScale = useRef({});
 
     function startDrag(e1, callback) {
@@ -58,27 +60,27 @@ function Slider() {
         containerRef.current.addEventListener("touchstart", event);
     }, [initDrag]);
 
-    const cards = imageArray.map((image, index) => (
-        <img className="card" style={{ width: sizeSlides.width + 'px', height: sizeSlides.height + 'px' }} src={image} key={index} ref={el => (cardRefs.current[index] = el)} />
+    const slides = imageArray.map((image, index) => (
+        <img className="slide" style={{ width: sizeSlides.width + 'px', height: sizeSlides.height + 'px' }} src={image} key={index} ref={el => (slideRefs.current[index] = el)} />
     ));
 
-    const calcPos = useCallback((x, scale, cardWidth) => {
+    const calcPos = useCallback((x, scale, slideWidth) => {
         const center = containerRef.current.offsetWidth / 2;
-        const position = center + x * spacebetweenSlides - cardWidth / 2;
+        const position = center + x * spacebetweenSlides - slideWidth / 2;
         return position;
     }, []);
 
-    const updateCards = useCallback((card, data) => {
-        if (data.x != null) card.setAttribute("data-x", data.x);
+    const updateslides = useCallback((slide, data) => {
+        if (data.x != null) slide.setAttribute("data-x", data.x);
         if (data.scale != null) {
-            card.style.transform = `scale(${data.scale})`;
-            card.style.opacity = data.scale === 0 ? 0 : 1;
+            slide.style.transform = `scale(${data.scale})`;
+            slide.style.opacity = data.scale === 0 ? 0 : 1;
         }
         if (data.leftPos != null) {
-            card.style.left = `${data.leftPos}px`;
+            slide.style.left = `${data.leftPos}px`;
         }
         if (data.zIndex != null) {
-            card.style.zIndex = data.zIndex;
+            slide.style.zIndex = data.zIndex;
         }
     }, []);
 
@@ -91,8 +93,8 @@ function Slider() {
         return x <= 0 ? 1 + x / 5 : 1 - x / 5;
     }, []);
 
-    const checkOrdering = useCallback((card, x, xDist, centerIndex) => {
-        const original = parseInt(card.dataset.x);
+    const checkOrdering = useCallback((slide, x, xDist, centerIndex) => {
+        const original = parseInt(slide.dataset.x);
         const rounded = Math.round(xDist);
         let newX = x;
 
@@ -103,44 +105,44 @@ function Slider() {
                 newX = ((x + rounded + 1) + centerIndex) - rounded + centerIndex;
             }
 
-            xScale.current[newX + rounded] = card;
+            xScale.current[newX + rounded] = slide;
         }
 
         const temp = -Math.abs(newX + rounded);
-        updateCards(card, { zIndex: temp });
+        updateslides(slide, { zIndex: temp });
 
         return newX;
-    }, [updateCards]);
+    }, [updateslides]);
 
     const build = useCallback(() => {
-        if (!cardRefs.current[0] || !containerRef.current) return;
+        if (!slideRefs.current[0] || !containerRef.current) return;
 
-        const centerIndex = (cardRefs.current.length - 1) / 2;
-        const cardWidth = cardRefs.current[0].offsetWidth;
+        const centerIndex = (slideRefs.current.length - 1) / 2;
+        const slideWidth = slideRefs.current[0].offsetWidth;
 
-        for (let i = 0; i < cardRefs.current.length; i++) {
+        for (let i = 0; i < slideRefs.current.length; i++) {
             const x = i - centerIndex;
             const scale = calcScale(x);
             const scale2 = calcScale2(x);
             const zIndex = -(Math.abs(i - centerIndex));
-            const leftPos = calcPos(x, scale2, cardWidth);
+            const leftPos = calcPos(x, scale2, slideWidth);
 
-            xScale.current[x] = cardRefs.current[i];
+            xScale.current[x] = slideRefs.current[i];
 
-            updateCards(cardRefs.current[i], {
+            updateslides(slideRefs.current[i], {
                 x,
                 scale,
                 leftPos,
                 zIndex
             });
         }
-    }, [calcScale, calcScale2, calcPos, updateCards]);
+    }, [calcScale, calcScale2, calcPos, updateslides]);
 
-    const moveCards = useCallback((data) => {
-        console.log("moveCards")
-        if (!cardRefs.current[0] || !containerRef.current) return;
+    const moveslides = useCallback((data) => {
+        console.log("moveslides")
+        if (!slideRefs.current[0] || !containerRef.current) return;
 
-        const centerIndex = (cardRefs.current.length - 1) / 2;
+        const centerIndex = (slideRefs.current.length - 1) / 2;
         let xDist;
 
         if (data != null) {
@@ -151,47 +153,47 @@ function Slider() {
             xDist = 0;
 
             for (let x in xScale.current) {
-                updateCards(xScale.current[x], {
+                updateslides(xScale.current[x], {
                     x: x,
                     zIndex: Math.abs(Math.abs(x) - centerIndex)
                 });
             }
         }
 
-        const cardWidth = cardRefs.current[0].offsetWidth;
+        const slideWidth = slideRefs.current[0].offsetWidth;
 
-        for (let i = 0; i < cardRefs.current.length; i++) {
-            const x = checkOrdering(cardRefs.current[i], parseInt(cardRefs.current[i].dataset.x), xDist, centerIndex);
+        for (let i = 0; i < slideRefs.current.length; i++) {
+            const x = checkOrdering(slideRefs.current[i], parseInt(slideRefs.current[i].dataset.x), xDist, centerIndex);
             const scale = calcScale(x + xDist);
             const scale2 = calcScale2(x + xDist);
-            const leftPos = calcPos(x + xDist, scale2, cardWidth);
+            const leftPos = calcPos(x + xDist, scale2, slideWidth);
 
-            updateCards(cardRefs.current[i], {
+            updateslides(slideRefs.current[i], {
                 scale,
                 leftPos
             });
         }
-    }, [calcScale, calcScale2, calcPos, checkOrdering, updateCards]);
+    }, [calcScale, calcScale2, calcPos, checkOrdering, updateslides]);
 
     useEffect(() => {
         build();
-        getDistance(moveCards);
+        getDistance(moveslides);
 
         return () => {
             if (containerRef.current) {
-                const event = initDrag(moveCards);
+                const event = initDrag(moveslides);
                 containerRef.current.removeEventListener("mousedown", event);
                 containerRef.current.removeEventListener("touchstart", event);
             }
         };
-    }, [build, getDistance, initDrag, moveCards]);
+    }, [build, getDistance, initDrag, moveslides]);
 
     return (
-        <div ref={containerRef} className="container">
-            <div className="card-carousel" style={{ width: (+sizeSlides.width * 1.8) + 'px', height: sizeSlides.height + 'px' }}>
-                {cards}
+        <div >
+            <div ref={containerRef} className="container" style={{ width: sizeContainer + 'px', height: sizeSlides.height + 'px' }}>
+                {slides}
             </div>
-        </div>
+        </div >
     );
 }
 
