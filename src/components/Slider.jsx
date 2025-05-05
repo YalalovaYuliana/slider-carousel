@@ -9,11 +9,15 @@ import img5 from '/src/assets/img5.jpg';
 const imageArray = [img1, img2, img3, img4, img5];
 
 function Slider() {
+    const sizeSlides = { width: '250', height: '250' } // размер слайда
+    const spacebetweenSlides = 150  // расстояние между центрами слайдов
+
     const containerRef = useRef();
     const cardRefs = useRef([]);
     const xScale = useRef({});
 
     function startDrag(e1, callback) {
+        console.log("startDrag")
         const isTouch = "touches" in e1;
         const startX = isTouch ? e1.touches[0].clientX : e1.clientX;
 
@@ -25,6 +29,7 @@ function Slider() {
     }
 
     const initDrag = useCallback((callback) => {
+        console.log("initDrag")
         let handler;
 
         return e1 => {
@@ -54,13 +59,12 @@ function Slider() {
     }, [initDrag]);
 
     const cards = imageArray.map((image, index) => (
-        <img className="card" src={image} key={index} ref={el => (cardRefs.current[index] = el)} />
+        <img className="card" style={{ width: sizeSlides.width + 'px', height: sizeSlides.height + 'px' }} src={image} key={index} ref={el => (cardRefs.current[index] = el)} />
     ));
 
     const calcPos = useCallback((x, scale, cardWidth) => {
-        const spacing = 150; // расстояние между центрами карточек
         const center = containerRef.current.offsetWidth / 2;
-        const position = center + x * spacing - cardWidth / 2;
+        const position = center + x * spacebetweenSlides - cardWidth / 2;
         return position;
     }, []);
 
@@ -133,6 +137,7 @@ function Slider() {
     }, [calcScale, calcScale2, calcPos, updateCards]);
 
     const moveCards = useCallback((data) => {
+        console.log("moveCards")
         if (!cardRefs.current[0] || !containerRef.current) return;
 
         const centerIndex = (cardRefs.current.length - 1) / 2;
@@ -183,7 +188,7 @@ function Slider() {
 
     return (
         <div ref={containerRef} className="container">
-            <div className="card-carousel">
+            <div className="card-carousel" style={{ width: (+sizeSlides.width * 1.8) + 'px', height: sizeSlides.height + 'px' }}>
                 {cards}
             </div>
         </div>
