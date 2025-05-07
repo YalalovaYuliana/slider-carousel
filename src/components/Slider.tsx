@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo } from 'react';
 import './Slider.css'
-import img1 from '/src/assets/img1.jpg';
-import img2 from '/src/assets/img2.jpeg';
-import img3 from '/src/assets/img3.jpeg';
-import img4 from '/src/assets/img4.jpg';
-import img5 from '/src/assets/img5.jpg';
 
-const imageArray: string[] = [img1, img2, img3, img4, img5];
+type sliderProps = {
+    sizeSlides: {
+        width: number
+        height: number
+    },
+    spacebetweenSlides: number,
+    sizeContainer: number,
+    imageArray: string[]
+}
 
 type PositionData = {
     x?: number;
@@ -19,16 +22,12 @@ type XScaleRef = {
     [key: number]: HTMLImageElement | null;
 };
 
-function Slider() {
-    const sizeSlides = { width: 250, height: 250 }; // размер слайда в пикселях
-    const spacebetweenSlides: number = 160; // расстояние между центрами слайдов
-    const sizeContainer: number = 550; // ширина слайдера
-
+const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeContainer, imageArray }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const slideRefs = useRef<(HTMLImageElement | null)[]>([]);
     const xScale = useRef<XScaleRef>({});
 
-    const slides = useMemo(() => imageArray.map((image, index) => (
+    const slides = useMemo(() => imageArray.map((image: string, index: number) => (
         <img className="slide"
             style={{
                 width: `${sizeSlides.width}px`,
@@ -42,7 +41,7 @@ function Slider() {
                 }
             }}
             alt={`Slide ${index}`} />
-    )), [sizeSlides.width, sizeSlides.height]);
+    )), [sizeSlides.width, sizeSlides.height, imageArray]);
 
     function startDrag(
         startEvent: MouseEvent | TouchEvent,
@@ -121,7 +120,7 @@ function Slider() {
     ) => {
         console.log(currentX, xDist, centerIndex)
         const original = parseInt(slide.dataset.x || "0"); // Получаем исходную позицию слайда из data-атрибута (или 0, если не указано)
-        const rounded = Math.round(xDist);  // Округляем расстояние перемещения для целочисленных расчетов
+        const rounded = Math.abs(xDist) >= 0.3 ? Math.sign(xDist) : 0;
         let newX = currentX;    // Инициализируем новую позицию текущим значением
         const totalX = currentX + rounded; // Текущая позиция + смещение
 
@@ -132,8 +131,10 @@ function Slider() {
                 newX = ((totalX + 1) + centerIndex) - rounded + centerIndex;
             }
 
-            xScale.current[newX + rounded] = slide;    // Сохраняем связь между позицией и слайдом в ref-объекте
+            xScale.current[newX + rounded] = slide;
         }
+
+        console.log(newX)
 
         const temp = -Math.abs(newX + rounded);
         updateslides(slide, { zIndex: temp });

@@ -14,7 +14,7 @@
 }
 
 .container.smooth-return .slide {
-    transition: transform 0.8s ease, left 0.8s ease, opacity 0.8s ease;
+    transition: transform 0.4s linear, left 0.4s linear, opacity 0.4s linear;
 }
 
 .slide {
