@@ -13,7 +13,7 @@ type sliderProps = {
 }
 
 type PositionData = {
-    x?: number;
+    slideIndex?: number;
     scale?: number;
     leftPos?: number;
     zIndex?: number;
@@ -27,24 +27,29 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
     const containerRef = useRef<HTMLDivElement>(null);
     const slideRefs = useRef<(HTMLImageElement | null)[]>([]);
     const xScale = useRef<XScaleRef>({});
-    const [centerSlideIndex, setCenterSlideIndex] = useState<number | null>(null);
+    //const [centerSlideIndex, setCenterSlideIndex] = useState<number | null>(null);
+    const [beersCopy, setBeersCopy] = useState<Beer[]>(beers.length % 2 === 0 ? [...beers, ...beers.slice(0, beers.length - 1)] : beers)
 
-    const slides = useMemo(() => beers.map((beer, index) => (
-        <img
-            className="slide"
-            style={{
-                width: `${sizeSlides.width}px`,
-                height: `${sizeSlides.height}px`
-            }}
-            key={index}
-            src={`data:image/png;base64,${beer.image}`}
-            ref={ref => {
-                if (slideRefs.current) {
-                    slideRefs.current[index] = ref;
-                }
-            }}
-            alt={beer.name} />
-    )), [sizeSlides.width, sizeSlides.height, beers]);
+    const slides = useMemo(() => {
+        console.log(beersCopy)
+        const items = beersCopy.map((beer, index) => (
+            <img
+                className="slide"
+                style={{
+                    width: `${sizeSlides.width}px`,
+                    height: `${sizeSlides.height}px`
+                }}
+                key={index}
+                src={`data:image/png;base64,${beer.image}`}
+                ref={ref => {
+                    if (slideRefs.current) {
+                        slideRefs.current[index] = ref;
+                    }
+                }}
+                alt={beer.name} />
+        ));
+        return items;
+    }, [sizeSlides.width, sizeSlides.height, beersCopy]);
 
     const texts = useMemo(() => beers.map((beer, index) => (
         <div className="slide-text" key={index}>
@@ -53,34 +58,34 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         </div>
     )), [beers]);
 
-    const updateCenterSlide = useCallback(() => {
-        if (!containerRef.current || slideRefs.current.length === 0) return;
+    // const updateCenterSlide = useCallback(() => {
+    //     if (!containerRef.current || slideRefs.current.length === 0) return;
 
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const containerCenter = containerRect.left + containerRect.width / 2;
+    //     const containerRect = containerRef.current.getBoundingClientRect();
+    //     const containerCenter = containerRect.left + containerRect.width / 2;
 
-        let closestIndex = 0;
-        let closestDistance = Infinity;
+    //     let closestIndex = 0;
+    //     let closestDistance = Infinity;
 
-        slideRefs.current.forEach((slide, index) => {
-            if (!slide) return;
-            const slideRect = slide.getBoundingClientRect();
-            const slideCenter = slideRect.left + slideRect.width / 2;
-            const distance = Math.abs(containerCenter - slideCenter);
+    //     slideRefs.current.forEach((slide, index) => {
+    //         if (!slide) return;
+    //         const slideRect = slide.getBoundingClientRect();
+    //         const slideCenter = slideRect.left + slideRect.width / 2;
+    //         const distance = Math.abs(containerCenter - slideCenter);
 
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = index;
-            }
-        });
+    //         if (distance < closestDistance) {
+    //             closestDistance = distance;
+    //             closestIndex = index;
+    //         }
+    //     });
 
-        setCenterSlideIndex(closestIndex);
-    }, []);
+    //     setCenterSlideIndex(closestIndex);
+    // }, []);
 
 
     function startDrag(
         startEvent: MouseEvent | TouchEvent,
-        callback: (data: { x: number } | null) => void
+        callback: (data: { slideIndex: number } | null) => void
     ): (moveEvent: MouseEvent | TouchEvent | null) => void {
         const isTouch = "touches" in startEvent;
         const startX = isTouch ? (startEvent as TouchEvent).touches[0].clientX : (startEvent as MouseEvent).clientX;
@@ -88,11 +93,11 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         return (moveEvent: MouseEvent | TouchEvent | null) => {
             if (moveEvent === null) return callback(null);
             const moveX = ("touches" in moveEvent ? (moveEvent as TouchEvent).touches[0].clientX : (moveEvent as MouseEvent).clientX) - startX;
-            callback({ x: moveX });
+            callback({ slideIndex: moveX });
         };
     }
 
-    const initDrag = useCallback((callback: (data: { x: number } | null) => void) => {
+    const initDrag = useCallback((callback: (data: { slideIndex: number } | null) => void) => {
         let handler: (moveEvent: MouseEvent | TouchEvent | null) => void;
 
         return (startEvent: MouseEvent | TouchEvent) => {
@@ -114,26 +119,25 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         };
     }, []);
 
-    const getDistance = useCallback((callback: (data: { x: number } | null) => void) => {
+    const getDistance = useCallback((callback: (data: { slideIndex: number } | null) => void) => {
         if (!containerRef.current) return;
         const event = initDrag(callback);
         containerRef.current.addEventListener("mousedown", event as EventListener);
         containerRef.current.addEventListener("touchstart", event as EventListener, { passive: false });
     }, [initDrag]);
 
-    const calcPos = useCallback((x: number, slideWidth: number) => {
+    const calcPos = useCallback((slideIndex: number) => {
         if (!containerRef.current) return 0;
 
-        const containerWidth = containerRef.current.offsetWidth;
-        const containerCenter = containerWidth / 2;
-        const slideOffset = slideWidth / 2;
+        const containerCenter = sizeContainer / 2;
+        const slideCenter = sizeSlides.width / 2;
 
-        return containerCenter + x * spacebetweenSlides - slideOffset;
-    }, [spacebetweenSlides]);
+        return containerCenter + slideIndex * spacebetweenSlides - slideCenter;
+    }, [spacebetweenSlides, sizeContainer, sizeSlides.width]);
 
 
     const updateslides = useCallback((slide: HTMLImageElement, data: PositionData) => {
-        if (data.x != null) slide.setAttribute("data-x", data.x.toString());
+        if (data.slideIndex != null) slide.setAttribute("data-x", data.slideIndex.toString());
         if (data.scale != null) {
             slide.style.transform = `scale(${data.scale})`;
             slide.style.opacity = data.scale === 0 ? "0" : "1";
@@ -146,8 +150,8 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         }
     }, []);
 
-    const calcScale = useCallback((x: number) => {
-        const formula = 1 - (1 / 5) * Math.pow(x, 2);
+    const calcScale = useCallback((slideIndex: number) => {
+        const formula = 1 - (1 / 5) * Math.pow(slideIndex, 2);
         return formula <= 0 ? 0 : formula;
     }, []);
 
@@ -157,7 +161,6 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         xDist: number,              // Расстояние, на которое перемещается слайд
         centerIndex: number         // Индекс центрального слайда (опорная точка)
     ) => {
-        console.log()
         const original = parseInt(slide.dataset.x || "0"); // Получаем исходную позицию слайда из data-атрибута (или 0, если не указано)
         const rounded = Math.abs(xDist) >= 0.3 ? Math.sign(xDist) : 0;
         let newX = currentX;    // Инициализируем новую позицию текущим значением
@@ -169,7 +172,6 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
             } else if (totalX < original && totalX < -centerIndex) { // Если слайд переместился влево от исходной позиции И за границу центра
                 newX = ((totalX + 1) + centerIndex) - rounded + centerIndex;
             }
-
             xScale.current[newX + rounded] = slide;
         }
 
@@ -184,21 +186,19 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
 
         const centerIndex = (slideRefs.current.length - 1) / 2;
         //setCenterSlideIndex(Math.floor(centerIndex));
-        const slideWidth = slideRefs.current[0].offsetWidth;
-        console.log(containerRef.current)
         for (let i = 0; i < slideRefs.current.length; i++) {
             const slide = slideRefs.current[i];
             if (!slide) continue;
 
-            const x = i - centerIndex;
-            const scale = calcScale(x);
+            const slideIndex = i - centerIndex;
+            const scale = calcScale(slideIndex);
             const zIndex = -(Math.abs(i - centerIndex));
-            const leftPos = calcPos(x, slideWidth);
+            const leftPos = calcPos(slideIndex);
 
-            xScale.current[x] = slide;
+            xScale.current[slideIndex] = slide;
 
             updateslides(slide, {
-                x,
+                slideIndex,
                 scale,
                 leftPos,
                 zIndex,
@@ -206,7 +206,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         }
     }, [calcScale, calcPos, updateslides]);
 
-    const moveSlides = useCallback((data: { x: number } | null) => {
+    const moveSlides = useCallback((data: { slideIndex: number } | null) => {
         if (!slideRefs.current[0] || !containerRef.current) return;
 
         const centerIndex = (slideRefs.current.length - 1) / 2;
@@ -215,7 +215,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
 
         if (data != null) {
             containerRef.current.classList.remove("smooth-return");
-            xDist = data.x / 250;
+            xDist = data.slideIndex / 250;
         } else {
             //updateCenterSlide();
             containerRef.current.classList.add("smooth-return");
@@ -226,14 +226,12 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
                 const slide = xScale.current[x];
                 if (slide) {
                     updateslides(slide, {
-                        x: parseInt(x),
+                        slideIndex: parseInt(x),
                         zIndex: Math.abs(Math.abs(parseInt(x)) - centerIndex),
                     });
                 }
             }
         }
-
-        const slideWidth = slideRefs.current[0].offsetWidth;
 
         for (let i = 0; i < slideRefs.current.length; i++) {
             const slide = slideRefs.current[i];
@@ -242,7 +240,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
             const currentX = parseInt(slide.dataset.x || "0");
             const x = checkOrdering(slide, currentX, xDist, centerIndex);
             const scale = calcScale(x + xDist);
-            const leftPos = calcPos(x + xDist, slideWidth);
+            const leftPos = calcPos(x + xDist);
 
             updateslides(slide, {
                 scale,
@@ -268,7 +266,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
     }, [build, getDistance, initDrag, moveSlides]);
 
     return (
-        <>
+        <div className='main-container'>
             <div
                 ref={containerRef}
                 className="container"
@@ -278,9 +276,10 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
                 }}>
                 {slides}
             </div>
-            {texts[centerSlideIndex ?? 0]}
-
-        </>
+            <div className='text'>
+                {texts[0]}
+            </div>
+        </div>
     );
 }
 

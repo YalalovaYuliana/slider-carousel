@@ -29,7 +29,6 @@ function App() {
       .then(data => {
         if (Array.isArray(data)) {
           const updatedBeers = [...data];
-          console.log(updatedBeers)
           setBeers(updatedBeers);
         } else {
           console.error("Нет данных о пиве");
@@ -46,7 +45,7 @@ function App() {
   const sliderProps = {
     sizeSlides: {
       width: 250,    // Ширина слайдов
-      height: 250    // Высота слайдов
+      height: 300    // Высота слайдов
     },
     spacebetweenSlides: 130,  // Расстояние между слайдами
     sizeContainer: 450,       // Ширина контейнера
