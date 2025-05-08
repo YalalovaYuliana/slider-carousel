@@ -1,26 +1,67 @@
+import { useEffect, useState, useRef } from "react";
 import Slider from "./components/Slider"
-import img1 from '/src/assets/img1.jpg';
-import img2 from '/src/assets/img2.jpeg';
-import img3 from '/src/assets/img3.jpeg';
-import img4 from '/src/assets/img4.jpg';
-import img5 from '/src/assets/img5.jpg';
-
-const imageArray: string[] = [img1, img2, img3, img4, img5];
-
-const sliderProps = {
-  sizeSlides: {
-    width: 250,    // Ширина слайдов
-    height: 250    // Высота слайдов
-  },
-  spacebetweenSlides: 160,  // Расстояние между слайдами
-  sizeContainer: 550,       // Ширина контейнера
-  imageArray: imageArray  // Массив изображений
-};
+import type Beer from "./components/Beer";
 
 function App() {
+  const [beers, setBeers] = useState<Beer[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const didFetch = useRef(false);
+
+  useEffect(() => {
+    if (didFetch.current) return;
+    didFetch.current = true;
+    setIsLoading(true);
+
+    const config = {
+      baseUrl: 'https://backend.ponarth.com/api/site/beer/all',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    fetch(config.baseUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Ошибка: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          const updatedBeers = [...data];
+          console.log(updatedBeers)
+          setBeers(updatedBeers);
+        } else {
+          console.error("Нет данных о пиве");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
+  }, []);
+
+  const sliderProps = {
+    sizeSlides: {
+      width: 250,    // Ширина слайдов
+      height: 250    // Высота слайдов
+    },
+    spacebetweenSlides: 130,  // Расстояние между слайдами
+    sizeContainer: 450,       // Ширина контейнера
+    beers: beers,  // Массив изображений
+  };
+
+  if (isLoading) {
+    return (
+      <div><span>Загрузка</span></div>
+    )
+  }
   return (
     <Slider {...sliderProps} />
   )
+
 }
 
 export default App

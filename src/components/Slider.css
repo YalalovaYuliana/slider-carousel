@@ -11,6 +11,7 @@
     position: relative;
     margin: 0 auto;
     transition: filter .3s ease;
+    background-color: burlywood;
 }
 
 .container.smooth-return .slide {
