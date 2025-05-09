@@ -140,7 +140,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
 
 
     const updateslides = useCallback((slide: HTMLImageElement, data: PositionData) => {
-        console.log("UPDATE_SLIDE_INDEX: ", data.slideIndex)
+        //console.log("UPDATE_SLIDE_INDEX: ", data.slideIndex)
         if (data.slideIndex != null) slide.setAttribute("data-x", data.slideIndex.toString());
         if (data.scale != null) {
             slide.style.transform = `scale(${data.scale})`;
@@ -156,7 +156,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
 
     const calcScale = useCallback((slideIndex: number) => {
         const formula = 1 - (1 / 5) * Math.pow(slideIndex, 2);
-        return formula <= 0 ? 0 : formula;
+        return formula <= 0.55 ? 0 : formula;
     }, []);
 
     const checkOrdering = useCallback((
@@ -170,24 +170,28 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         let newX = currentX;    // Инициализируем новую позицию текущим значением
         const totalX = currentX + rounded; // Текущая позиция + смещение
 
+        //console.log("TOTAL_X:", totalX, " CENTER_INDEX: ", centerIndex)
+
         if (currentX !== currentX + rounded) { // Проверяем, изменилась ли позиция после округления
-            if (totalX > original) {  // Если слайд переместился вправо от исходной позиции и за границу центра
+            if (totalX > original) {  // Если слайд переместился вправо от исходной позиции
                 //newX = ((totalX - 1) - centerIndex) - rounded + -centerIndex;
+                //console.log("NEW_X: ", newX)
                 if (currentX === Math.max(...indexArray.current)) {
                     newX = Math.min(...indexArray.current)
                 } else {
-                    newX = currentX + 1
+                    newX = totalX
                 }
-            } else if (totalX < original) { // Если слайд переместился влево от исходной позиции и за границу центра
+            } else if (totalX < original) { // Если слайд переместился влево от исходной позиции
                 //newX = ((totalX + 1) + centerIndex) - rounded + centerIndex;
+                //console.log("NEW_X: ", newX)
                 if (currentX === Math.min(...indexArray.current)) {
                     newX = Math.max(...indexArray.current)
                 } else {
-                    newX = currentX - 1
+                    newX = totalX
                 }
             }
 
-            console.log("CHECK_ORIGINAL: ", original, "CURRENT_X: ", currentX, "NEW_X: ", newX, "ROUNDED: ", rounded)
+            //console.log("CHECK_ORIGINAL: ", original, "CURRENT_X: ", currentX, "NEW_X: ", newX, "ROUNDED: ", rounded)
             xScale.current[newX] = slide;
             //console.log("CHECK_X_SCALE: ", xScale.current[newX + rounded])
         }
