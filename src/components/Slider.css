@@ -6,11 +6,8 @@
 
 .text {
     flex: 0 0 60vw;
-    /* Фиксированная ширина для текстового блока */
     padding-left: 10px;
-    /* Отступ от слайдера */
     margin-left: 0;
-    /* Убрали ненужный отступ */
 }
 
 .main-container {
@@ -32,7 +29,6 @@
     position: relative;
     margin: 0 auto;
     transition: filter .3s ease;
-    background-color: burlywood;
 }
 
 .container.smooth-return .slide {
