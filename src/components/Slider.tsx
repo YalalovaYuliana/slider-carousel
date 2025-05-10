@@ -274,7 +274,7 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
     }, [build, getDistance, initDrag, moveSlides]);
 
     return (
-        <div className='mainContainer'>
+        <div className='main-container'>
             <div
                 ref={containerRef}
                 className="container"

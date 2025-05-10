@@ -47,7 +47,7 @@ function App() {
       width: 250,    // Ширина слайдов
       height: 350    // Высота слайдов
     },
-    spacebetweenSlides: 130,  // Расстояние между слайдами
+    spacebetweenSlides: 150,  // Расстояние между слайдами
     sizeContainer: 450,       // Ширина контейнера
     beers: beers,  // Массив изображений
   };

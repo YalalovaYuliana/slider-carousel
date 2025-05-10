@@ -4,19 +4,26 @@
     padding: 0;
 }
 
-.text {
-    flex: 0 0 60vw;
-    /* Фиксированная ширина для текстового блока */
-    padding-left: 10px;
-    /* Отступ от слайдера */
-    margin-left: 0;
-    /* Убрали ненужный отступ */
-}
-
 .main-container {
     display: flex;
-    width: 100%;
+    gap: 40px;
+    width: 100vw;
+    justify-content: center;
     align-items: center;
+}
+
+.text {
+    display: grid;
+    gap: 20px;
+    max-width: 480px;
+    flex: 1;
+}
+
+.beer-name {
+    font-size: 40px;
+    font-weight: 300;
+    text-transform: uppercase;
+    line-height: 62px;
 }
 
 @media (max-width: 768px) {
@@ -30,7 +37,6 @@
     overflow: hidden;
     z-index: 1;
     position: relative;
-    margin: 0 auto;
     transition: filter .3s ease;
 }
 
