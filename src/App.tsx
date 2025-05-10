@@ -45,9 +45,9 @@ function App() {
   const sliderProps = {
     sizeSlides: {
       width: 250,    // Ширина слайдов
-      height: 300    // Высота слайдов
+      height: 350    // Высота слайдов
     },
-    spacebetweenSlides: 160,  // Расстояние между слайдами
+    spacebetweenSlides: 130,  // Расстояние между слайдами
     sizeContainer: 450,       // Ширина контейнера
     beers: beers,  // Массив изображений
   };

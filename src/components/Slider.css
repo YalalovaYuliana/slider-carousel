@@ -6,8 +6,11 @@
 
 .text {
     flex: 0 0 60vw;
+    /* Фиксированная ширина для текстового блока */
     padding-left: 10px;
+    /* Отступ от слайдера */
     margin-left: 0;
+    /* Убрали ненужный отступ */
 }
 
 .main-container {
@@ -41,5 +44,4 @@
     margin: 0;
     transition: inherit;
     filter: brightness(.9);
-    transition: transform 0.3s linear, left 0.3s linear, opacity 0.3s linear;
 }
