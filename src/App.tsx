@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Slider from "./components/Slider"
 import type Beer from "./components/Beer";
+import "@fontsource/roboto/300.css";
 
 function App() {
   const [beers, setBeers] = useState<Beer[]>([]);
@@ -11,6 +12,13 @@ function App() {
     if (didFetch.current) return;
     didFetch.current = true;
     setIsLoading(true);
+
+    const cleanDescription = (description: string) => {
+      const lastParamEnd = description.lastIndexOf(';');
+      return lastParamEnd === -1
+        ? description
+        : description.slice(lastParamEnd + 1).trim();
+    };
 
     const config = {
       baseUrl: 'https://backend.ponarth.com/api/site/beer/all',
@@ -28,8 +36,11 @@ function App() {
       })
       .then(data => {
         if (Array.isArray(data)) {
-          const updatedBeers = [...data];
-          setBeers(updatedBeers);
+          const cleanedBeers = data.map(beer => ({
+            ...beer,
+            description: cleanDescription(beer.description),
+          }));
+          setBeers(cleanedBeers);
         } else {
           console.error("Нет данных о пиве");
         }
@@ -44,8 +55,8 @@ function App() {
 
   const sliderProps = {
     sizeSlides: {
-      width: 250,    // Ширина слайдов
-      height: 350    // Высота слайдов
+      width: 210,    // Ширина слайдов
+      height: 360    // Высота слайдов
     },
     spacebetweenSlides: 150,  // Расстояние между слайдами
     sizeContainer: 450,       // Ширина контейнера

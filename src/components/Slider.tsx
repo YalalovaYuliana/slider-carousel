@@ -43,10 +43,11 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         alt: beers[beers.length - 1].name,
         src: `data:image/png;base64,${beers[beers.length - 1].image}`
     });
-    const [centerText, setCenterText] = React.useState<textData>({
+    const [centerText, setCenterText] = useState<textData>({
         name: beersCopy.current[(beersCopy.current.length - 1) / 2].name,
         description: beersCopy.current[(beersCopy.current.length - 1) / 2].description
     });
+    const isDraggingRef = useRef(false);
 
     const slides = useMemo(() => beersCopy.current.map((beer, index) => (
         <img className="slide"
@@ -119,34 +120,38 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
     }, [spacebetweenSlides]);
 
     const updateslides = useCallback((slide: HTMLImageElement, data: PositionData) => {
+        if (data.scale != null) {
+            slide.style.transform = `scale(${data.scale})`;
+            if (window.innerWidth <= 768) {
+                slide.style.opacity = data.x === 0 ? '1' : '0';
+            } else {
+                slide.style.opacity = data.scale === 0 ? '0' : '1';
+            }
+        }
         if (data.x != null) {
             if (beers.length % 2 === 0 && slide.hasAttribute("data-x")) {
                 const currentX = +(slide.getAttribute("data-x")!);
                 if (data.x === Math.max(...indexesArray.current) && currentX === Math.min(...indexesArray.current)) {
                     const newExtraItem: beerData = {
-                        alt: slide.getAttribute("alt")!,
-                        src: slide.getAttribute("src")!
+                        alt: slide.alt,
+                        src: slide.src,
                     };
-                    slide.setAttribute("alt", extraItemRef.current.alt);
-                    slide.setAttribute("src", extraItemRef.current.src);
+                    slide.alt = extraItemRef.current.alt
+                    slide.src = extraItemRef.current.src
                     extraItemRef.current = newExtraItem;
                 }
 
                 if (data.x === Math.min(...indexesArray.current) && currentX === Math.max(...indexesArray.current)) {
                     const newExtraItem: beerData = {
-                        alt: slide.getAttribute("alt")!,
-                        src: slide.getAttribute("src")!
+                        alt: slide.alt,
+                        src: slide.src,
                     };
-                    slide.setAttribute("alt", extraItemRef.current.alt);
-                    slide.setAttribute("src", extraItemRef.current.src);
+                    slide.alt = extraItemRef.current.alt
+                    slide.src = extraItemRef.current.src
                     extraItemRef.current = newExtraItem;
                 }
             }
             slide.setAttribute("data-x", data.x.toString());
-        }
-        if (data.scale != null) {
-            slide.style.transform = `scale(${data.scale})`;
-            slide.style.opacity = data.scale === 0 ? "0" : "1";
         }
         if (data.leftPos != null) {
             slide.style.left = `${data.leftPos}px`;
@@ -177,6 +182,20 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         }
 
         const temp = -Math.abs(newX + rounded);
+
+        // console.log(newX)
+
+        // if (window.innerWidth <= 768) {
+        //     if (newX === 0) {
+        //         slide.style.opacity = "1"
+        //         //updateslides(slide, { x: original, zIndex: temp, scale: 1 });
+        //     } else {
+        //         //updateslides(slide, { x: original, zIndex: temp, scale: 0 });
+        //         slide.style.opacity = "0"
+        //     }
+        // } else {
+        //     updateslides(slide, { x: original, zIndex: temp });
+        // }
         updateslides(slide, { zIndex: temp });
 
         return newX;
@@ -219,9 +238,11 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
         if (data != null) {
             containerRef.current.classList.remove("smooth-return");
             xDist = data.x / 250;
+            isDraggingRef.current = true;
         } else {
             containerRef.current.classList.add("smooth-return");
             xDist = 0;
+            isDraggingRef.current = false;
 
             for (const x in xScale.current) {
                 const slide = xScale.current[x];
@@ -246,17 +267,18 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
             const leftPos = calcPos(x + xDist, slideWidth);
 
             updateslides(slide, {
+                x,
                 scale,
                 leftPos,
             });
         }
 
-        const centerSlide = xScale.current[0]; // x === 0 - центральный слайд
+        const centerSlide = xScale.current[0];
         if (centerSlide) {
             const text = texts.find(text => text.name === centerSlide.alt);
             if (text) setCenterText(text);
         }
-    }, [calcScale, calcPos, checkOrdering, updateslides, sizeSlides.width]);
+    }, [calcScale, calcPos, checkOrdering, updateslides, sizeSlides.width, texts]);
 
     useEffect(() => {
         build();
