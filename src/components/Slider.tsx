@@ -183,19 +183,6 @@ const Slider: React.FC<sliderProps> = ({ sizeSlides, spacebetweenSlides, sizeCon
 
         const temp = -Math.abs(newX + rounded);
 
-        // console.log(newX)
-
-        // if (window.innerWidth <= 768) {
-        //     if (newX === 0) {
-        //         slide.style.opacity = "1"
-        //         //updateslides(slide, { x: original, zIndex: temp, scale: 1 });
-        //     } else {
-        //         //updateslides(slide, { x: original, zIndex: temp, scale: 0 });
-        //         slide.style.opacity = "0"
-        //     }
-        // } else {
-        //     updateslides(slide, { x: original, zIndex: temp });
-        // }
         updateslides(slide, { zIndex: temp });
 
         return newX;

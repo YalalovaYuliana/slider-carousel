@@ -4,6 +4,13 @@ import type Beer from "./components/Beer";
 import "@fontsource/roboto/300.css";
 
 function App() {
+  const sizeSlides = {
+    width: 210,    // Ширина слайдов
+    height: 360    // Высота слайдов
+  }
+  let spacebetweenSlides = 150 // Расстояние между слайдами
+  const sizeContainer = 450 // Ширина контейнера
+
   const [beers, setBeers] = useState<Beer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const didFetch = useRef(false);
@@ -53,13 +60,12 @@ function App() {
       })
   }, []);
 
+  spacebetweenSlides = window.innerWidth <= 768 ? spacebetweenSlides * 2 : spacebetweenSlides;
+
   const sliderProps = {
-    sizeSlides: {
-      width: 210,    // Ширина слайдов
-      height: 360    // Высота слайдов
-    },
-    spacebetweenSlides: 150,  // Расстояние между слайдами
-    sizeContainer: 450,       // Ширина контейнера
+    sizeSlides: sizeSlides,
+    spacebetweenSlides: spacebetweenSlides,
+    sizeContainer: sizeContainer,
     beers: beers,  // Массив изображений
   };
 

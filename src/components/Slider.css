@@ -49,8 +49,8 @@
         flex: .7;
     }
 
-    .slide {
-        transition: transform 0.4s linear, left 0.4s linear, opacity 0.4s linear;
+    .container.smooth-return .slide {
+        transition: transform 0.7s linear, left 0.7s linear, opacity 2s linear;
     }
 }
 
